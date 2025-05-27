@@ -1,4 +1,5 @@
-import { twiml } from 'twilio';
+import twilio from 'twilio';
+const { twiml } = twilio;
 
 const callHandler = async (req, res) => {
   const voiceResponse = new twiml.VoiceResponse();
