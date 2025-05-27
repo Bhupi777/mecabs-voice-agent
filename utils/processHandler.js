@@ -2,7 +2,9 @@ import axios from 'axios';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { twiml } from 'twilio';
+import twilio from 'twilio'; // ✅ Correct import for ESM
+const { twiml } = twilio;
+
 import { transcribeAudio } from './transcribeWhisper.js';
 import { getDeepSeekReply } from './deepseekReply.js';
 import { generateSpeech } from './elevenLabsSpeak.js';
@@ -12,6 +14,7 @@ const __dirname = path.dirname(__filename);
 
 const processHandler = async (req, res) => {
   const recordingUrl = req.body.RecordingUrl;
+
   try {
     const audioRes = await axios.get(`${recordingUrl}.mp3`, { responseType: 'arraybuffer' });
     const audioPath = path.join(__dirname, '../audio/output.mp3');
