@@ -14,25 +14,36 @@ const __dirname = path.dirname(__filename);
 
 const processHandler = async (req, res) => {
   const recordingUrl = req.body.RecordingUrl;
-  const voiceResponse = new twiml.VoiceResponse();
+  const response = new twiml.VoiceResponse();
 
   try {
-    const audioRes = await axios.get(`${recordingUrl}.mp3`, { responseType: 'arraybuffer' });
+    // Download the recorded audio
+    const audioRes = await axios.get(`${recordingUrl}.mp3`, {
+      responseType: 'arraybuffer'
+    });
+
+    // Save locally as output.mp3
     const audioPath = path.join(__dirname, '../audio/output.mp3');
     fs.writeFileSync(audioPath, Buffer.from(audioRes.data));
 
+    // Transcribe using Whisper
     const transcript = await transcribeAudio(audioPath);
+
+    // Generate AI reply using DeepSeek
     const aiReply = await getDeepSeekReply(transcript);
+
+    // Convert to speech using ElevenLabs
     await generateSpeech(aiReply);
 
-    voiceResponse.play(`${process.env.BASE_URL}/audio/output.mp3`);
+    // Play the ElevenLabs-generated MP3 to the caller
+    response.play(`${process.env.BASE_URL}/audio/output.mp3`);
   } catch (err) {
     console.error('Error in /process:', err);
-    voiceResponse.say({ voice: 'Polly.Dorothy' }, 'Sorry, something went wrong. Please try again later.');
+    response.say('Sorry, something went wrong. Please try again later.');
   }
 
   res.type('text/xml');
-  res.send(voiceResponse.toString());
+  res.send(response.toString());
 };
 
 export default processHandler;
