@@ -1,8 +1,14 @@
-import { twiml } from 'twilio';
+import twilio from 'twilio';
+const { twiml } = twilio;
 
 const callHandler = async (req, res) => {
   const voiceResponse = new twiml.VoiceResponse();
-  voiceResponse.say({ voice: 'Polly.Dorothy' }, 'Hello, ME CABS. How may I help you? Please tell me your pickup and drop-off location after the beep.');
+  
+  voiceResponse.say(
+    { voice: 'Polly.Dorothy' },
+    'Hello, ME CABS. How may I help you? Please tell me your pickup and drop-off location after the beep.'
+  );
+
   voiceResponse.record({
     action: '/process',
     method: 'POST',
@@ -11,7 +17,12 @@ const callHandler = async (req, res) => {
     playBeep: true,
     trim: 'do-not-trim'
   });
-  voiceResponse.say({ voice: 'Polly.Dorothy' }, 'Sorry, I did not receive any response. Please call again.');
+
+  voiceResponse.say(
+    { voice: 'Polly.Dorothy' },
+    'Sorry, I did not receive any response. Please call again.'
+  );
+
   res.type('text/xml');
   res.send(voiceResponse.toString());
 };
