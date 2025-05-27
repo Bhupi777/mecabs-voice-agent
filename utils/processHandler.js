@@ -2,7 +2,7 @@ import axios from 'axios';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import twilio from 'twilio'; // ✅ Correct import for ESM
+import twilio from 'twilio';
 const { twiml } = twilio;
 
 import { transcribeAudio } from './transcribeWhisper.js';
@@ -14,6 +14,7 @@ const __dirname = path.dirname(__filename);
 
 const processHandler = async (req, res) => {
   const recordingUrl = req.body.RecordingUrl;
+  const voiceResponse = new twiml.VoiceResponse();
 
   try {
     const audioRes = await axios.get(`${recordingUrl}.mp3`, { responseType: 'arraybuffer' });
@@ -24,17 +25,14 @@ const processHandler = async (req, res) => {
     const aiReply = await getDeepSeekReply(transcript);
     await generateSpeech(aiReply);
 
-    const response = new twiml.VoiceResponse();
-    response.play(`${process.env.BASE_URL}/audio/output.mp3`);
-    res.type('text/xml');
-    res.send(response.toString());
+    voiceResponse.play(`${process.env.BASE_URL}/audio/output.mp3`);
   } catch (err) {
-    console.error('Error:', err);
-    const response = new twiml.VoiceResponse();
-    response.say('Sorry, there was an error processing your request.', { voice: 'Polly.Dorothy' });
-    res.type('text/xml');
-    res.send(response.toString());
+    console.error('Error in /process:', err);
+    voiceResponse.say({ voice: 'Polly.Dorothy' }, 'Sorry, something went wrong. Please try again later.');
   }
+
+  res.type('text/xml');
+  res.send(voiceResponse.toString());
 };
 
 export default processHandler;
