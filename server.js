@@ -19,6 +19,10 @@ app.use('/audio', express.static(path.join(__dirname, 'audio')));
 
 app.post('/call', callHandler);
 app.post('/process', processHandler);
+app.get('/', (req, res) => {
+  res.send('✅ ME CABS Voice Agent is live');
+});
+
 
 app.listen(PORT, () => {
   console.log(`🚕 ME CABS Voice Agent running on port ${PORT}`);
